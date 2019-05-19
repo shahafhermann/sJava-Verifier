@@ -1,0 +1,133 @@
+iporat08
+shahaf.hermann
+
+
+=============================
+=      File description     =
+=============================
+//** main Package **//
+Sjavac.java - The main driver class of this program.
+
+//** analyzing Package **//
+Argument.java - Implements a method argument.
+LineAnalyzer.java - Implements analyzing tools for breaking up a single line of code.
+LineFormatFactory.java - Implements a Factory design pattern for line formats.
+InvalidArgumentsException.java - Implements an exception class for invalid method declaration.
+InvalidBooleanExpressionException.java - Implements an exception class for invalid boolean condition
+                                         expressions.
+MissingMethodNameException.java - Implements an exception class for missing method name.
+MissingTypeException.java - Implements an exception class for missing variable type.
+UnsupportedSyntaxException.java - Implements an exception class for illegal declaration of variable.
+
+//** Scopes Package **//
+Scope.java - Implements a generic scope's node.
+GlobalScope.java - Implements a Global Scope node (root) in the program's hierarchy.
+IfScope.java - Implements an If Scope node in the program's hierarchy.
+MethodScope.java - Implements a Method's Scope node in the program's hierarchy.
+WhileScope.java - Implements a While Scope node in the program's hierarchy.
+ScopeFactory.java - Implements a Factory design pattern for creating Scope instances.
+IllegalDeclarationException.java - Implements an exception class for invalid variable declaration.
+IllegalOperationException.java - Implements an exception class for illegal operation.
+
+//** variables Package **//
+Variable.java - Implements an object representing a variable in a source file's code.
+TypeInt.java - Implements an int variable.
+TypeDouble.java - Implements a double variable.
+TypeBoolean.java - Implements a boolean variable.
+TypeString.java - Implements a String variable.
+TypeChar.java - Implements a char variable.
+VariableFactory.java - Implements a Factory design pattern for creating variables.
+IncompatibleTypeException.java - Implements an exception class for incompatible variable types.
+TypeNotSupportedException.java - Implements an exception class for illegal declaration type.
+
+
+=============================
+=          Design           =
+=============================
+Packages:
+ We divided our project into 4 packages, whereas the main package contains only the Sjavac class which is our
+ main driver. The other 3 packages are dealing with 3 different main issues, which are Variable definitions,
+ Scope hierarchy and file processing.
+ Each of the above communicate with each other but each has it's own very different purpose.
+
+Factory:
+ We implemented 3 Factory classes, for each of the 3 corresponding packages (A variable factory, a scope
+ factory and a line format factory).
+ These helps preserving the single choice principle as well as code modularity.
+
+Tree Structure:
+ We chose to represent the Scopes hierarchy as a tree in which each scope is a node that has a pointer to
+ it's parent but not to it's children. This way each scope is aware of previously declared variables but is
+ unaware of variable declared in it's inner scopes.
+ This kind of structure also allows  searching the tree efficiently, where the longest runtime would depend
+ on the tree's height.
+
+Error Handling:
+ We created 9 different exception classes, each one covers a different type of error. The exceptions are
+ located in the same packages whose containing classes from which they are thrown. Every exception has it's
+ own default informative error message which is created with the default constructor, or could be called with
+ a custom message.
+
+
+=============================
+=  Implementation details   =
+=============================
+LineType Enum:
+ Line types (method declaration, return statement, empty line etc...) are defined in an enum class in
+ LineAnalyzer. This inner class has an abstract method "getPattern()" which is implemented in each type
+ of line, which in turn contains it's own unique pattern.
+ This allows easy iteration over all different types of lines, no matter how many more types we add - which
+ increases modularity. In addition, this makes adding and supporting new syntax easy - just add another type
+ to the LineType enum and the corresponding case to the lineFormatFactory.
+
+Method Arguments:
+ We created a class to represent a method Argument, in addition to all normal variables. Argument is located
+ in analyzing package, in contrast to Variables. The reason for this is that this object represents a mid
+ state in the process of creating the method arguments as variables since they need to be treated as valid
+ variables (although they are not initialised and could be final) and remembered as arguments (for when the
+ method is called). They are later "converted" to regular Variables and saved in the relevant data structures
+ of the scope.
+
+Data Structures:
+ We made use of HashMaps to store lists of variables defined in a certain scope (as well as methods defined
+ in the global scope) with their name and a reference to their Variable (or Scope) object representation.
+ This allows quick and efficient search in O(1) when we need to get a certain variable or method out of the
+ data structure.
+
+Error Handling: All exceptions are thrown back from all methods, and handled only in the Sjavac class,
+ including IOExceptions. This way there's no need to handle exceptions in every method, but just throw them
+ and let the main class do it's bidding.
+
+
+
+===============================
+=  Answers to PDF Questions   =
+===============================
+Adding new variable types:
+ In order to do so, we would create a new class for this specific type extending Variable class and
+ having it's TYPE field initialized to a String representation of this type (ie: for float type, this could
+ be "float"). In addition, this type representation would be added to the factory along with the matching
+ switch case. Finally, the regex for variable type and value will be adjusted to include the new type.
+
+Supporting Classes:
+ In order to support classes, all we need to do is create a new class extending Scope class which
+ represents a Class Scope. This class would be much like out current GlobalScope, and GlobalScope will work
+ the same way but instead of being able to contain methods and variables, will only be able to contain
+ ClassScopes. In addition, we will add a CLASS_DECLARATION line type enum to LineAnalyzer, defined with it's
+ pattern. Relevant adjustments will be made in the ScopeFactory.
+
+Different method's types:
+ We would add to MethodScope a data member representing it's type as String, the same way as Variables are. We
+ will then adjust the RETURN line type enum to also accept value/variable return statements and add a check
+ at returnCase to see if the variable returned matches the current method's type.
+ In addition we would change VAR_TYPE regex to also exclude "void" keyword as a variable name and
+ VAR_ASSIGNMENT regex pattern to accept method calls as assign values, and check the method's type
+ compatibility (with the assigned variable).
+
+Regular Expressions:
+ In this project we made use of 21 regular expressions, with two main ones being VAR_NAME and VAR_TYPE.
+ VAR_NAME is a regex representing a legal name for a variable, as instructed in S-Java rules. We chose to
+ exclude variable keywords from the name (allowing void to be a variable name) - to make it more like real
+ Java.
+ VAR_TYPE is a regex representing a legal name of a variable type, and also allowing a "final" prefix.
+
