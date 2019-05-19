@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"oop.ex6.analyzing"},{"l":"oop.ex6.main"},{"l":"oop.ex6.Scopes"},{"l":"oop.ex6.variables"}]
